@@ -21,6 +21,8 @@ var is_mouse_pressed: bool = false
 
 var letter_indices := Vector2i(0, 0)
 
+var pressing := false
+
 @onready var camera = $"../MainCamera"
 
 
@@ -69,12 +71,18 @@ func _draw() -> void:
 func _gui_input(event: InputEvent) -> void:
 	var char_dimensions = user_interface.get_char_dimensions()
 	var char_counts = user_interface.char_counts
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			letter_indices.x = event.position.x / char_dimensions.x
-			letter_indices.y = event.position.y / char_dimensions.y
-			user_interface.set_current_char_index(letter_indices.y * char_counts.x + letter_indices.x)
-			queue_redraw()
+	var do_select := false
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		pressing = event.pressed
+		do_select = pressing
+	if event is InputEventMouseMotion and pressing and user_interface.painting:
+		do_select = true
+
+	if do_select:
+		letter_indices.x = event.position.x / char_dimensions.x
+		letter_indices.y = event.position.y / char_dimensions.y
+		user_interface.set_current_char_index(letter_indices.y * char_counts.x + letter_indices.x)
+		queue_redraw()
 
 
 func _draw_letter_selection():
